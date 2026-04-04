@@ -18,6 +18,9 @@ import connectDB from "./server/config/db.js";
 const app = express();
 const httpServer = createServer(app);
 
+// Trust proxy for Vercel (required for rate limiting)
+app.set("trust proxy", 1);
+
 // 1. Synchronous Middlewares
 app.use(helmet({
   contentSecurityPolicy: process.env.NODE_ENV === "production" ? undefined : false,

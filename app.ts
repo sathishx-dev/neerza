@@ -5,7 +5,7 @@ import express from "express";
 import path from "path";
 import { createServer } from "http";
 // import { Server } from "socket.io";
-import { createServer as createViteServer } from "vite";
+// import { createServer as createViteServer } from "vite";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import xss from 'xss-clean';
@@ -72,6 +72,8 @@ async function startServer() {
 
   // Development: Vite Middleware
   if (process.env.NODE_ENV !== "production") {
+
+    const { createServer: createViteServer } = await import("vite");
 
     const vite = await createViteServer({
       server: { middlewareMode: true },

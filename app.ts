@@ -18,61 +18,37 @@ import connectDB from "./server/config/db.js";
 const app = express();
 const httpServer = createServer(app);
 
-// Socket.IO Setup Removed for Vercel Compatibility (Supabase Realtime is used instead)
-/*
-export const io = new Server(httpServer, {
-  cors: {
-    origin: "*",
-  },
-});
-*/
+// 1. Synchronous Middlewares
+app.use(helmet({
+  contentSecurityPolicy: process.env.NODE_ENV === "production" ? undefined : false,
+}));
 
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 600, // Limit each IP to 100 requests per windowMs
+  message: "Too many requests from this IP, please try again after 15 minutes",
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+app.use(limiter);
+app.use(xss());
+app.use(express.json());
+
+// 2. Synchronous Routes (Required for Vercel Serverless Functions)
+app.use("/api/auth", authRoutes);
+app.use("/api/orders", orderRoutes);
+app.use("/api/admin", adminRoutes);
+
+// 3. Asynchronous Server Initialization (for DB and Vite)
 async function startServer() {
-  // Initialize Database
+  // Initialize Database (Async, but doesn't block route definition)
   await connectDB();
   
   const PORT = Number(process.env.PORT) || 3000;
 
-  // Security Middlewares
-  app.use(helmet({
-    contentSecurityPolicy: process.env.NODE_ENV === "production" ? undefined : false,
-  }));
-  
-  const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 600, // Limit each IP to 100 requests per windowMs
-    message: "Too many requests from this IP, please try again after 15 minutes",
-    standardHeaders: true,
-    legacyHeaders: false,
-  });
-
-  // Apply rate limiting to all requests
-  app.use(limiter);
-
-  // Data Sanitization against XSS
-  app.use(xss());
-
-  app.use(express.json());
-
-  // API Routes
-  app.use("/api/auth", authRoutes);
-  app.use("/api/orders", orderRoutes);
-  app.use("/api/admin", adminRoutes);
-
-  // Socket.IO connection (Handled by Supabase)
-  /*
-  io.on("connection", (socket) => {
-    console.log("Socket connected:", socket.id);
-
-    socket.on("disconnect", () => {
-      console.log("Socket disconnected:", socket.id);
-    });
-  });
-  */
-
-  // Development: Vite Middleware
+  // Development: Vite Middleware for frontend
   if (process.env.NODE_ENV !== "production") {
-
     const { createServer: createViteServer } = await import("vite");
 
     const vite = await createViteServer({
@@ -81,17 +57,14 @@ async function startServer() {
     });
 
     app.use(vite.middlewares);
-
   } else {
-
+    // Static file serving fallback for production (Vercel typically handles this, but good fallback)
     const distPath = path.join(process.cwd(), "dist");
-
     app.use(express.static(distPath));
 
     app.get("*", (req, res) => {
       res.sendFile(path.join(distPath, "index.html"));
     });
-
   }
 
   // Global Error Handler
@@ -117,6 +90,8 @@ async function startServer() {
   }
 }
 
+// Start async initialization
 startServer();
 
+// Immediate synchronous export of the Express app (Vercel expects routes to be bound already)
 export default app;

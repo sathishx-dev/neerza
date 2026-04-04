@@ -1,6 +1,6 @@
 import express from 'express';
-import { getAdminDashboard, getAllOrders, getAllCustomers, updateOrderStatus } from '../controllers/adminController';
-import { authMiddleware, adminMiddleware } from '../middleware/authMiddleware';
+import { getAdminDashboard, getAllOrders, getAllCustomers, updateOrderStatus } from '../controllers/adminController.js';
+import { authMiddleware, adminMiddleware } from '../middleware/authMiddleware.js';
 import { body } from 'express-validator';
 
 const router = express.Router();

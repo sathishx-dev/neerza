@@ -2,8 +2,8 @@ import express from 'express';
 import { 
   sendOtp, verifyOtp, resendOtp, login, updateProfile, 
   forgotPassword, resetPassword 
-} from '../controllers/authController';
-import { authMiddleware } from '../middleware/authMiddleware';
+} from '../controllers/authController.js';
+import { authMiddleware } from '../middleware/authMiddleware.js';
 import { body } from 'express-validator';
 import rateLimit from 'express-rate-limit';
 

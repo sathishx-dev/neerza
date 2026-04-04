@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
-import { AuthRequest } from '../middleware/authMiddleware';
-import { getDB } from '../config/db';
-import { sendOrderEmail } from '../services/emailService';
-// import { io } from '../../server';
+import { AuthRequest } from '../middleware/authMiddleware.js';
+import { getDB } from '../config/db.js';
+import { sendOrderEmail } from '../services/emailService.js';
+// import { io } from '../../app.js';
 import { validationResult } from 'express-validator';
 
 export const createOrder = async (req: AuthRequest, res: Response) => {

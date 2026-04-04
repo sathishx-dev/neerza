@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { getDB } from '../config/db';
+import { getDB } from '../config/db.js';
 import { validationResult } from 'express-validator';
 
 export const getAdminDashboard = async (req: Request, res: Response) => {

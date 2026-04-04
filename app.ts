@@ -10,10 +10,10 @@ import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import xss from 'xss-clean';
 
-import authRoutes from "./server/routes/authRoutes";
-import orderRoutes from "./server/routes/orderRoutes";
-import adminRoutes from "./server/routes/adminRoutes";
-import connectDB from "./server/config/db";
+import authRoutes from "./server/routes/authRoutes.js";
+import orderRoutes from "./server/routes/orderRoutes.js";
+import adminRoutes from "./server/routes/adminRoutes.js";
+import connectDB from "./server/config/db.js";
 
 const app = express();
 const httpServer = createServer(app);

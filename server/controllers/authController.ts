@@ -1,12 +1,12 @@
 import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { getDB } from '../config/db';
-import { AuthRequest } from '../middleware/authMiddleware';
-import { sendOTPEmail } from '../services/emailService';
-// import { io } from '../../server';
+import { getDB } from '../config/db.js';
+import { AuthRequest } from '../middleware/authMiddleware.js';
+import { sendOTPEmail } from '../services/emailService.js';
+// import { io } from '../../app.js';
 import { validationResult } from 'express-validator';
-import { logSecurityEvent } from '../utils/logger';
+import { logSecurityEvent } from '../utils/logger.js';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'neerza_secret';
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'shivane2026@gmail.com';

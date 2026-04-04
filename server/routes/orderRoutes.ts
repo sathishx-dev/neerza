@@ -1,6 +1,6 @@
 import express from 'express';
-import { createOrder, getMyOrders, reorder, cancelOrder } from '../controllers/orderController';
-import { authMiddleware } from '../middleware/authMiddleware';
+import { createOrder, getMyOrders, reorder, cancelOrder } from '../controllers/orderController.js';
+import { authMiddleware } from '../middleware/authMiddleware.js';
 import { body } from 'express-validator';
 
 const router = express.Router();

@@ -64,7 +64,10 @@ export const getDB = async () => {
         if (process.env.NODE_ENV !== 'production') {
            console.log('DB QUERY (get):', pgSql, 'PARAMS:', safeParams);
         }
-        const res = await pool!.query(pgSql, safeParams);
+        if (!pool) {
+          throw new Error('Database connection not established. Check DATABASE_URL in Vercel settings.');
+        }
+        const res = await pool.query(pgSql, safeParams);
         return res.rows[0];
       } catch (err: any) {
         console.error('Database Error (get):', err.message, 'SQL:', pgSql, 'PARAMS:', safeParams);
@@ -75,7 +78,10 @@ export const getDB = async () => {
       const pgSql = convertParams(sql);
       const safeParams = cleanParams(params);
       try {
-        const res = await pool!.query(pgSql, safeParams);
+        if (!pool) {
+          throw new Error('Database connection not established. Check DATABASE_URL in Vercel settings.');
+        }
+        const res = await pool.query(pgSql, safeParams);
         return res.rows;
       } catch (err: any) {
         console.error('Database Error (all):', err.message, 'SQL:', pgSql);
@@ -96,7 +102,10 @@ export const getDB = async () => {
       const finalSql = convertParams(pgSql);
       const safeParams = cleanParams(params);
       try {
-        const res = await pool!.query(finalSql, safeParams);
+        if (!pool) {
+          throw new Error('Database connection not established. Check DATABASE_URL in Vercel settings.');
+        }
+        const res = await pool.query(finalSql, safeParams);
         
         return {
           lastID: res.rows[0]?.id,

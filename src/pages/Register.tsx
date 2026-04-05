@@ -108,10 +108,17 @@ export default function Register() {
             {step === 1 && (
               <motion.form 
                 key="step1"
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 20 }}
-                transition={{ duration: 0.3, ease: "easeOut" }}
+                variants={{
+                  hidden: { opacity: 0, x: -20 },
+                  visible: { 
+                    opacity: 1, x: 0, 
+                    transition: { duration: 0.3, ease: "easeOut", staggerChildren: 0.05 } 
+                  },
+                  exit: { opacity: 0, x: 20, transition: { duration: 0.3, ease: "easeOut" } }
+                }}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
                 onSubmit={handleSendOtp} 
                 className="space-y-4"
               >

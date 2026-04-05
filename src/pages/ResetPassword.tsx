@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
-import axios from 'axios';
+import api from '../services/api';
 import { motion } from 'motion/react';
 import { Lock, KeyRound, Loader2, ArrowRight, ArrowLeft } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -29,7 +29,7 @@ export default function ResetPassword() {
     setLoading(true);
 
     try {
-      const res = await axios.post('http://localhost:3000/api/auth/reset-password', {
+      const res = await api.post('/auth/reset-password', {
         email,
         otp,
         newPassword

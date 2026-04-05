@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import axios from 'axios';
+import api from '../services/api';
 import { motion } from 'motion/react';
 import { Mail, ArrowLeft, Loader2, ArrowRight } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -15,7 +15,7 @@ export default function ForgotPassword() {
     setLoading(true);
 
     try {
-      const res = await axios.post('http://localhost:3000/api/auth/forgot-password', { email });
+      const res = await api.post('/auth/forgot-password', { email });
       toast.success(res.data.message);
       navigate('/reset-password', { state: { email } });
     } catch (error: any) {

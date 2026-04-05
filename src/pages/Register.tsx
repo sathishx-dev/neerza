@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { Droplets, Mail, Lock, User, MapPin, ArrowRight, ShieldCheck, Eye, EyeOff } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import api from '../services/api';
@@ -24,7 +24,8 @@ const itemVariants = {
 };
 
 export default function Register() {
-  const [step, setStep] = useState<1 | 2>(1);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const step = searchParams.get('step') === '2' ? 2 : 1;
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -45,7 +46,7 @@ export default function Register() {
 
     try {
       await api.post('/auth/send-otp', formData);
-      setStep(2);
+      setSearchParams({ step: '2' });
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to send OTP. Please try again.');
     } finally {
@@ -254,7 +255,7 @@ export default function Register() {
                       
                       <button
                         type="button"
-                        onClick={() => setStep(1)}
+                        onClick={() => setSearchParams({})}
                         className="w-full py-3 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-all text-sm"
                       >
                         Back to Edit Details

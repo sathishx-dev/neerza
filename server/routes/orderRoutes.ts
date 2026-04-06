@@ -8,11 +8,11 @@ const router = express.Router();
 router.post('/create', 
   authMiddleware, 
   [
-    body('name').notEmpty(),
-    body('phone_number').isString().isLength({ min: 10 }),
-    body('address').notEmpty(),
-    body('cans').isInt({ min: 1 }),
-    body('payment_method').isIn(['Cash on Delivery', 'Online', 'Online Payment'])
+    body('name').notEmpty().withMessage('Name is required'),
+    body('phone_number').notEmpty().withMessage('Phone number is required'),
+    body('address').notEmpty().withMessage('Address is required'),
+    body('cans').notEmpty().withMessage('Number of cans is required'),
+    body('payment_method').notEmpty().withMessage('Payment method is required')
   ],
   createOrder
 );

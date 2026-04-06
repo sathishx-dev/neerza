@@ -9,7 +9,7 @@ router.post('/create',
   authMiddleware, 
   [
     body('name').notEmpty(),
-    body('phone_number').isMobilePhone('any'),
+    body('phone_number').isString().isLength({ min: 10 }),
     body('address').notEmpty(),
     body('cans').isInt({ min: 1 }),
     body('payment_method').isIn(['Cash on Delivery', 'Online', 'Online Payment'])

@@ -76,6 +76,9 @@ export default function AdminDashboard() {
   useEffect(() => {
     fetchDashboardData();
 
+    // 30-second polling fallback
+    const pollInterval = setInterval(fetchDashboardData, 30000);
+
     // Setup Supabase Realtime for live notifications
     const channel = supabase
       .channel('admin-live-updates')
@@ -127,6 +130,7 @@ export default function AdminDashboard() {
       .subscribe();
 
     return () => {
+      clearInterval(pollInterval);
       supabase.removeChannel(channel);
     };
   }, []);

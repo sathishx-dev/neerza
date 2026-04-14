@@ -25,7 +25,7 @@ const itemVariants = {
 
 export default function Dashboard() {
   const [user, setUser] = useState(JSON.parse(localStorage.getItem('user') || '{}'));
-  const isSunday = new Date().getDay() === 0;
+  const isSunday = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" })).getDay() === 0;
 
   useEffect(() => {
     const handleUserUpdate = () => {

@@ -31,7 +31,7 @@ export default function MyOrders() {
   const [reordering, setReordering] = useState<string | null>(null);
   const [cancelling, setCancelling] = useState<string | null>(null);
   const [currentTime, setCurrentTime] = useState(moment());
-  const isSunday = moment().day() === 0;
+  const isSunday = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" })).getDay() === 0;
 
   const navigate = useNavigate();
 

@@ -35,6 +35,7 @@ export default function Navbar() {
   }, []);
 
   const handleLogout = () => {
+    if (!window.confirm("Are you sure you want to logout?")) return;
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     window.dispatchEvent(new Event('user_updated'));

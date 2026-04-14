@@ -25,7 +25,7 @@ const itemVariants = {
 
 export default function Order() {
   const user = JSON.parse(localStorage.getItem('user') || '{}');
-  const isSunday = new Date().getDay() === 0;
+  const isSunday = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" })).getDay() === 0;
   const [formData, setFormData] = useState({
     name: user.name || '',
     phone_number: '',

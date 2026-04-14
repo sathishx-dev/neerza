@@ -17,8 +17,9 @@ export const createOrder = async (req: AuthRequest, res: Response) => {
 
   if (!user_id || !email) return res.status(401).json({ message: 'Unauthorized' });
 
-  // Prevent ordering on Sundays
-  if (new Date().getDay() === 0) {
+  // Prevent ordering on Sundays (IST)
+  const istDate = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
+  if (istDate.getDay() === 0) {
     return res.status(400).json({ message: 'Ordering is not available on Sundays.' });
   }
 
@@ -44,7 +45,7 @@ export const createOrder = async (req: AuthRequest, res: Response) => {
       cans,
       total_price,
       payment_method,
-      order_time: new Date().toLocaleString()
+      order_time: new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" })
     });
 
     // Emit live order notification to admin (Now handled by Supabase Realtime)
@@ -106,8 +107,9 @@ export const reorder = async (req: AuthRequest, res: Response) => {
 
   if (!user_id) return res.status(401).json({ message: 'Unauthorized' });
 
-  // Prevent reordering on Sundays
-  if (new Date().getDay() === 0) {
+  // Prevent reordering on Sundays (IST)
+  const istDateObj = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
+  if (istDateObj.getDay() === 0) {
     return res.status(400).json({ message: 'Reordering is not available on Sundays.' });
   }
 
@@ -137,7 +139,7 @@ export const reorder = async (req: AuthRequest, res: Response) => {
         cans: newOrder.cans,
         total_price: newOrder.total_price,
         payment_method: newOrder.payment_method,
-        order_time: new Date().toLocaleString()
+        order_time: new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" })
       });
 
       // Emit live order notification (Now handled by Supabase Realtime)

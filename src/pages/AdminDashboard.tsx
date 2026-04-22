@@ -1,5 +1,5 @@
 /// <reference types="vite/client" />
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Users, ShoppingBag, IndianRupee, TrendingUp, CheckCircle2, Clock, MapPin, Mail, Phone, Search, Bell, Truck, XCircle } from 'lucide-react';
 import { supabase } from '../supabaseClient';
 import {
@@ -44,6 +44,10 @@ export default function AdminDashboard() {
   const [hasUnreadNotifications, setHasUnreadNotifications] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
 
+  // Refs for polling & deduplication
+  const processedOrderIds = useRef<Set<string>>(new Set());
+  const processedUserIds = useRef<Set<string>>(new Set());
+
   // Close notifications on click outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -55,31 +59,60 @@ export default function AdminDashboard() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showNotifications]);
 
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = async (isInitial = false) => {
     try {
       const [statsRes, ordersRes, customersRes] = await Promise.all([
         api.get('/admin/dashboard'),
         api.get('/admin/orders'),
         api.get('/admin/customers')
       ]);
+      
+      const latestOrders = ordersRes.data;
+      const latestCustomers = customersRes.data;
+
+      // Detect new orders if not initial load
+      if (!isInitial && latestOrders.length > 0) {
+        latestOrders.forEach((order: any) => {
+          const oid = String(order._id || order.id);
+          if (!processedOrderIds.current.has(oid)) {
+            console.log('POLLING: Detected new order:', oid);
+            setNotifications(prev => [{
+              message: 'New Order Received',
+              order: { 
+                ...order, 
+                _id: oid, 
+                phone_number: order.phone_number || order.phone 
+              }
+            }, ...prev]);
+            setHasUnreadNotifications(true);
+            processedOrderIds.current.add(oid);
+          }
+        });
+      } else if (isInitial) {
+        // Populate processed sets on first load to avoid notifying about historically old data
+        latestOrders.forEach((o: any) => processedOrderIds.current.add(String(o._id || o.id)));
+        latestCustomers.forEach((c: any) => processedUserIds.current.add(String(c.id)));
+      }
+
       setStats(statsRes.data);
       console.log('DEBUG: Dashboard Stats:', statsRes.data);
-      setOrders(ordersRes.data);
-      setCustomers(customersRes.data);
+      setOrders(latestOrders);
+      setCustomers(latestCustomers);
     } catch (err) {
-      console.error(err);
+      console.error('Polling Error:', err);
     } finally {
-      setLoading(false);
+      if (isInitial) setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchDashboardData();
+    // Initial fetch
+    fetchDashboardData(true);
 
-    // 30-second polling fallback
-    const pollInterval = setInterval(fetchDashboardData, 30000);
+    // 5-second polling fallback (Enhanced for Vercel/Production)
+    const pollInterval = setInterval(() => fetchDashboardData(false), 5000);
 
-    // Setup Supabase Realtime for live notifications
+    // Setup Supabase Realtime for live notifications (Primary mechanism)
     const channel = supabase
       .channel('admin-live-updates')
       .on(
@@ -87,12 +120,23 @@ export default function AdminDashboard() {
         { event: 'INSERT', schema: 'public', table: 'orders' },
         (payload) => {
           const newOrder = payload.new;
-          setNotifications(prev => [{
-            message: 'New Order Received',
-            order: { ...newOrder, _id: String(newOrder.id) }
-          }, ...prev]);
-          setHasUnreadNotifications(true);
-          fetchDashboardData();
+          const oid = String(newOrder.id);
+          
+          // Only add if not already processed by polling
+          if (!processedOrderIds.current.has(oid)) {
+            console.log('REALTIME: Detected new order:', oid);
+            setNotifications(prev => [{
+              message: 'New Order Received',
+              order: { 
+                ...newOrder, 
+                _id: oid, 
+                phone_number: newOrder.phone // Supabase uses 'phone'
+              }
+            }, ...prev]);
+            setHasUnreadNotifications(true);
+            processedOrderIds.current.add(oid);
+          }
+          fetchDashboardData(false);
         }
       )
       .on(
@@ -100,7 +144,7 @@ export default function AdminDashboard() {
         { event: 'UPDATE', schema: 'public', table: 'orders' },
         (payload) => {
           console.log('Order status updated:', payload.new);
-          fetchDashboardData();
+          fetchDashboardData(false);
         }
       )
       .on(
@@ -108,14 +152,16 @@ export default function AdminDashboard() {
         { event: 'INSERT', schema: 'public', table: 'users' },
         (payload) => {
           const newUser = payload.new;
-          if (newUser.role === 'customer') {
+          const uid = String(newUser.id);
+          if (newUser.role === 'customer' && !processedUserIds.current.has(uid)) {
             setNotifications(prev => [{
               message: 'New Customer Registered',
               type: 'registration',
               customer: { id: newUser.id, name: newUser.name, email: newUser.email }
             }, ...prev]);
             setHasUnreadNotifications(true);
-            fetchDashboardData();
+            processedUserIds.current.add(uid);
+            fetchDashboardData(false);
           }
         }
       )
@@ -124,7 +170,7 @@ export default function AdminDashboard() {
         { event: 'UPDATE', schema: 'public', table: 'users' },
         (payload) => {
           console.log('User profile updated:', payload.new);
-          fetchDashboardData();
+          fetchDashboardData(false);
         }
       )
       .subscribe();
